@@ -1,0 +1,15 @@
+//List of words to search for. 
+// Don't worry about efficency, we can convert this into a better data structure at boot time.
+{
+    "fastball": {
+        "full": [
+            "fastball", //index 0 should be the exact word
+            "festival"
+        ],
+        "prefix": [ //will count as a valid ball-type word if it comes before a ball-type suffix (that's in ballSuffix.jsonc)
+            "fast", 
+            "fest",
+            "first"
+        ]
+    }
+}
