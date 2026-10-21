@@ -13,24 +13,26 @@ const PitchDisplay: React.FC<ContainerProps> = () => {
         "changeup",
         "curveball",
         "cutter",
-        "forkball",
-        "palmball",
+        "4-seamer",
+        "2-seamer",
         "screwball",
         "slider",
         "slurve",
-        "splitter"
+        "splitter",
+        "sweeper",
+        "knuckleball"
     ];
 
     function getRandomPitch() {
       pitch = balltypes[Math.floor(Math.random() * balltypes.length)];
       console.log(pitch);
-      setImageSrc(`public/testimages/balltypes/${pitch}.png`);
+            setImageSrc(`/TestImages/BallTypes/${pitch}.png`);
     }
 
 
     return (
         <IonCard>
-            <img src={imageSrc}/>
+            <img src={imageSrc} alt={pitch === "default" ? "Pitch preview" : `${pitch} baseball pitch`} />
             <IonCardHeader>
                 <IonCardSubtitle>
                     <a href="https://rocklandpeakperformance.com/baseball-spin-rate-basics-pitch-movement/" target="_blank">test images source</a>
