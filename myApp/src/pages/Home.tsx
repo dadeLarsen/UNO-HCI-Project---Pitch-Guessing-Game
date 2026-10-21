@@ -20,6 +20,7 @@ import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { matchPitches } from '../lib/pitchMatcher';
 import type { MatchMethod } from '../lib/pitchMatcher';
 import './Home.css';
+import PitchDisplay from '../components/PitchDisplay';
 
 interface Guess {
   id: number;
@@ -80,12 +81,15 @@ const Home: React.FC = () => {
           <IonTitle>Pitch Guesser</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent fullscreen className="ion-padding">
-        <IonHeader collapse="condense">
-          <IonToolbar>
-            <IonTitle size="large">Pitch Guesser</IonTitle>
-          </IonToolbar>
-        </IonHeader>
+      {/* <IonHeader collapse="condense">
+        <IonToolbar>
+          <IonTitle size="large">Pitch Guesser</IonTitle>
+        </IonToolbar>
+      </IonHeader> */}
+
+      <IonContent className="ion-padding">
+        
+        <PitchDisplay></PitchDisplay>
 
         <IonCard>
           <IonCardHeader>

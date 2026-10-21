@@ -1,6 +1,5 @@
-//this is a list of words that sound like "ball". If it comes right after a ball-type prefix from that json, it will count as a valid ball-type word.
 [
-    "ball", //index 0 should be the exact word
+    "ball",
     "bowl",
     "baul"
 ]
