@@ -1,0 +1,58 @@
+.mic-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.transcript {
+  margin-top: 16px;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Small "recording" indicator dot */
+.live-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--ion-color-danger, #eb445a);
+  animation: pulse 1.2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.live-dot.idle {
+  background: var(--ion-color-medium, #92949c);
+  animation: none;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.interim-note {
+  display: block;
+  font-style: italic;
+  opacity: 0.8;
+}
+
+.error-message {
+  color: var(--ion-color-danger, #eb445a);
+  margin-top: 12px;
+}
+
+.guess-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.raw-transcript {
+  font-family: monospace;
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
