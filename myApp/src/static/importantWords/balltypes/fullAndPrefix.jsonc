@@ -72,5 +72,27 @@
         "prefix":[
             "palm"
         ]
+    },
+    "4-seamer": {
+        "full": [
+            "4-seamer",
+            "four seamer"
+        ]
+    },
+    "2-seamer": {
+        "full": [
+            "2-seamer",
+            "two seamer"
+        ]
+    },
+    "sweeper": {
+        "full": [
+            "sweeper"
+        ]
+    },
+    "knuckleball": {
+        "full": [
+            "knuckleball"
+        ]
     }
 }

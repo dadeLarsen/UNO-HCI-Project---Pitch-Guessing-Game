@@ -15,7 +15,7 @@ interface BallTypeEntry {
   /** Words that ARE the whole pitch name ("fastball") or sound like it ("festival"). */
   full: string[];
   /** Words that START a pitch name ("fast") and need a suffix word to complete it ("ball"). */
-  prefix: string[];
+  prefix?: string[];
 }
 
 type BallTypeMap = Record<string, BallTypeEntry>;
@@ -112,30 +112,47 @@ export function matchPitches(transcript: string): PitchMatch[] {
     const word = normalized[i];
     if (!word) continue;
 
+    const nextWord = normalized[i + 1];
+
     let matchedThisWord = false;
 
     for (const [pitch, entry] of Object.entries(ballTypes)) {
       if (matchedThisWord) break;
 
       // 1a. The word IS the pitch name (index 0 of "full" is the exact spelling).
-      const exactFull = entry.full.find((f, idx) => idx === 0 && f === word);
+      const exactFull = entry.full.find((f, idx) => {
+        if (idx !== 0) return false;
+        const normalizedFull = normalizeWord(f);
+        return normalizedFull === word || (nextWord && normalizedFull === `${word}${nextWord}`);
+      });
       if (exactFull) {
-        matches.push({ pitch, matchedWord: word, method: 'exact' });
+        const matchedWord = nextWord && normalizeWord(exactFull) === `${word}${nextWord}`
+          ? `${words[i]} ${words[i + 1]}`
+          : words[i];
+        matches.push({ pitch, matchedWord, method: 'exact' });
+        if (nextWord && normalizeWord(exactFull) === `${word}${nextWord}`) i += 1;
         matchedThisWord = true;
         break;
       }
 
       // 1b. The word SOUNDS LIKE the pitch name ("festival" -> fastball).
-      const soundAlike = entry.full.slice(1).find(f => f === word);
+      const soundAlike = entry.full.slice(1).find(f => {
+        const normalizedFull = normalizeWord(f);
+        return normalizedFull === word || (nextWord && normalizedFull === `${word}${nextWord}`);
+      });
       if (soundAlike) {
-        matches.push({ pitch, matchedWord: word, method: 'sound-alike' });
+        const matchedWord = nextWord && normalizeWord(soundAlike) === `${word}${nextWord}`
+          ? `${words[i]} ${words[i + 1]}`
+          : words[i];
+        matches.push({ pitch, matchedWord, method: 'sound-alike' });
+        if (nextWord && normalizeWord(soundAlike) === `${word}${nextWord}`) i += 1;
         matchedThisWord = true;
         break;
       }
 
       // 2. Prefix + suffix pair ("fast ball").
       const next = normalized[i + 1];
-      if (next && entry.prefix.some(p => looksLike(p, word)) && ballSuffixes.some(s => looksLike(s, next))) {
+      if (next && entry.prefix?.some(p => looksLike(p, word)) && ballSuffixes.some(s => looksLike(s, next))) {
         matches.push({ pitch, matchedWord: `${word} ${next}`, method: 'exact' });
         normalized[i + 1] = ''; // consume the suffix so "ball" can't double-match
         i += 1;

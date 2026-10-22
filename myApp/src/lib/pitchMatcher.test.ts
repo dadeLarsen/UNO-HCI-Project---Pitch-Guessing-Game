@@ -57,6 +57,25 @@ describe('matchPitches', () => {
     expect(matches.map(m => m.pitch)).toEqual(['fastball', 'fastball']);
   });
 
+  it('recognizes every pitch family from the pitch display', () => {
+    const matches = matchPitches(
+      'changeup curveball cutter four seamer two seamer screwball slider slurve splitter sweeper knuckleball',
+    );
+    expect(matches.map(m => m.pitch)).toEqual([
+      'changeup',
+      'curveball',
+      'cutter',
+      '4-seamer',
+      '2-seamer',
+      'screwball',
+      'slider',
+      'slurve',
+      'splitter',
+      'sweeper',
+      'knuckleball',
+    ]);
+  });
+
   it('ignores words that are not pitch names', () => {
     expect(matchPitches('the batter struck out')).toHaveLength(0);
   });
