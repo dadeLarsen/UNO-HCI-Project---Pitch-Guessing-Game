@@ -1,0 +1,63 @@
+{
+  "changeup": {
+    "videos": [
+      "https://sporty-clips.mlb.com/N3lMZUFfWGw0TUFRPT1fQndJSFV3RlZBd0VBQ2xKVUFBQUhCRkpUQUZnQ0JsQUFBMUZXQUFvRFZ3cFRCRmRX.mp4",
+      "https://sporty-clips.mlb.com/WU9WMzNfWGw0TUFRPT1fQmdrRkFGY0RVUUVBQ3dZR1h3QUhCQUJRQUFBTVZGUUFBVk1NVXdvQ0JBSlFWZ3RV.mp4"
+    ]
+  },
+  "curveball": {
+    "videos": [
+      "https://sporty-clips.mlb.com/a0R2ODlfWGw0TUFRPT1fQndKWVZWTlZBd29BRGxFSFV3QUhVMVFIQUFCUUIxZ0FVRlJVQXdVRkNRZFdCVk1B.mp4",
+      "https://sporty-clips.mlb.com/eUx3OEdfWGw0TUFRPT1fQmxCV0JsUUNBMVFBV2dZRUJRQUhCUVpUQUZrRFdsWUFWbHdFQmdZSEJWVUFDQUZm.mp4"
+    ]
+  },
+  "cutter": {
+    "videos": [
+      "https://sporty-clips.mlb.com/NnlNcm9fWGw0TUFRPT1fQmdVREFGUUVWUVlBQ3dOV0J3QUhCMWNFQUFOV1ZsRUFBVkVOQmdNR0FBTmNWQUVG.mp4",
+      "https://sporty-clips.mlb.com/VndQNFJfWGw0TUFRPT1fQmdOVlhGME5WUUFBV1FRTFhnQUhWUVZYQUFCUVVsZ0FBQUZXQmdKVEJ3b0dVVkZS.mp4"
+    ]
+  },
+  "4-seamer": {
+    "videos": [
+      "https://sporty-clips.mlb.com/a0R2ODlfWGw0TUFRPT1fQmdJSFhGTUVBQUFBRDFJRVZBQUhVQVZmQUZsVVcxWUFCVkZYVlZWVFUxQldWQUVB.mp4",
+      "https://sporty-clips.mlb.com/dnZ3MHpfWGw0TUFRPT1fQmxCUlUxME5VbFFBQzFOUVZnQUhVZzRDQUZrSEJRVUFBRklFQVFzR0NRUlVBbFJl.mp4"
+    ]
+  },
+  "2-seamer": {
+    "videos": [
+      ""
+    ]
+  },
+  "screwball": {
+    "videos": [
+      ""
+    ]
+  },
+  "slider": {
+    "videos": [
+      "https://sporty-clips.mlb.com/TDY1OXhfWGw0TUFRPT1fQmxNQUFGeFZWQWNBRFFFR0FnQUhWUVJRQUZrQUJnSUFDbFVDVkFOVUFnWURDRmRX.mp4",
+      "https://sporty-clips.mlb.com/bmJkWEdfWGw0TUFRPT1fQmdaVVZnSlNBd2NBQ1FZTFV3QUhDVlJlQUZnRFVWTUFCd0FOQXdCVEF3Y0hCZ0JR.mp4"
+    ]
+  },
+  "slurve": {
+    "videos": [
+      ""
+    ]
+  },
+  "splitter": {
+    "videos": [
+      "https://sporty-clips.mlb.com/RDFkazZfWGw0TUFRPT1fQmdrRlhWTU5VRkFBWGxVSEJ3QUhDUVJUQUFBTVZRSUFWMVVIVlFwUkJGQlFCQVVG.mp4",
+      "https://sporty-clips.mlb.com/QXc3QTJfWGw0TUFRPT1fQmdaVUFBVUFBbEFBQzFJRlh3QUhCUTVRQUFNQUJWWUFWbDBDQVFGV0F3SlJCd0ZY.mp4"
+    ]
+  },
+  "sweeper": {
+    "videos": [
+      "https://sporty-clips.mlb.com/eHl3WmtfV0ZRVkV3dEdEUT09X0JnWlFWVkFIVndVQVhsSlVBd0FIVWdBSEFGbFFXbFlBQzEwQ0JRVUVCbGRTQ1FBRA==.mp4"
+    ]
+  },
+  "knuckleball": {
+    "videos": [
+      ""
+    ]
+  }
+}
