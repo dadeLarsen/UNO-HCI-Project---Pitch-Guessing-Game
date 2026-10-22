@@ -20,17 +20,18 @@
   "4-seamer": {
     "videos": [
       "https://sporty-clips.mlb.com/a0R2ODlfWGw0TUFRPT1fQmdJSFhGTUVBQUFBRDFJRVZBQUhVQVZmQUZsVVcxWUFCVkZYVlZWVFUxQldWQUVB.mp4",
-      "https://sporty-clips.mlb.com/dnZ3MHpfWGw0TUFRPT1fQmxCUlUxME5VbFFBQzFOUVZnQUhVZzRDQUZrSEJRVUFBRklFQVFzR0NRUlVBbFJl.mp4"
+      "https://sporty-clips.mlb.com/dnZ3MHpfWGw0TUFRPT1fQmxCUlUxME5VbFFBQzFOUVZnQUhVZzRDQUZrSEJRVUFBRklFQVFzR0NRUlVBbFJl.mp4",
+      "https://sporty-clips.mlb.com/cU93TDRfWGw0TUFRPT1fQmxkUkJRVUNWZ0lBV1ZFR0FBQUhBbFZYQUZsWEJRQUFDbElHQndaWENRRUJBd1VD.mp4"
     ]
   },
   "2-seamer": {
     "videos": [
-      ""
+      "https://sporty-clips.mlb.com/M3k2djFfWGw0TUFRPT1fQmdJSEJWTlZCMVFBVzFJR1VnQUhDUVlEQUZrTUFRSUFCbGNEVlZWV0FsWmRDRmRU.mp4"
     ]
   },
   "screwball": {
     "videos": [
-      ""
+      "https://sporty-clips.mlb.com/TVpSVjVfWGw0TUFRPT1fQjFBSEJ3QUdYd2NBQzFvTFZRQUFWQTRGQUZnR1YxSUFBQUFGQmdjQUJWQmNCZ1lD.mp4"
     ]
   },
   "slider": {
@@ -41,7 +42,7 @@
   },
   "slurve": {
     "videos": [
-      ""
+      "https://sporty-clips.mlb.com/TDY1N25fWGw0TUFRPT1fQmdoU1VsRlJBMVFBRGxjS1ZRQUhCUVZRQUZnQVVGZ0FBQUFDVkFNR1VsZFFDUUFD.mp4"
     ]
   },
   "splitter": {
@@ -57,7 +58,7 @@
   },
   "knuckleball": {
     "videos": [
-      ""
+      "https://sporty-clips.mlb.com/d2VveEFfWGw0TUFRPT1fQkFrSFVWRlFCMVFBWGxCUkF3QUhBRk5VQUZrSEFnUUFVUWRYQUZGVVVBZFhBZ0lE.mp4"
     ]
   }
 }
