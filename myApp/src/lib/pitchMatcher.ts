@@ -87,6 +87,8 @@ export interface PitchMatch {
   matchedWord: string;
   /** How confident the *matcher* is, independent of the recognizer's own confidence. */
   method: MatchMethod;
+
+  isCorrect: boolean;
 }
 
 /**
@@ -100,7 +102,7 @@ export interface PitchMatch {
  * On top of that exact/sound-alike logic we allow a small edit distance so a
  * slightly mangled transcription ("fastboll") still scores.
  */
-export function matchPitches(transcript: string): PitchMatch[] {
+export function matchPitches(transcript: string, correctAnswer: string): PitchMatch[] {
   const words = transcript
     .toLowerCase()
     .split(/[^a-z0-9']+/)
@@ -129,7 +131,7 @@ export function matchPitches(transcript: string): PitchMatch[] {
         const matchedWord = nextWord && normalizeWord(exactFull) === `${word}${nextWord}`
           ? `${words[i]} ${words[i + 1]}`
           : words[i];
-        matches.push({ pitch, matchedWord, method: 'exact' });
+        matches.push({ pitch, matchedWord, method: 'exact', isCorrect: pitch == correctAnswer});
         if (nextWord && normalizeWord(exactFull) === `${word}${nextWord}`) i += 1;
         matchedThisWord = true;
         break;
@@ -144,7 +146,7 @@ export function matchPitches(transcript: string): PitchMatch[] {
         const matchedWord = nextWord && normalizeWord(soundAlike) === `${word}${nextWord}`
           ? `${words[i]} ${words[i + 1]}`
           : words[i];
-        matches.push({ pitch, matchedWord, method: 'sound-alike' });
+        matches.push({ pitch, matchedWord, method: 'sound-alike', isCorrect: pitch == correctAnswer });
         if (nextWord && normalizeWord(soundAlike) === `${word}${nextWord}`) i += 1;
         matchedThisWord = true;
         break;
@@ -153,7 +155,7 @@ export function matchPitches(transcript: string): PitchMatch[] {
       // 2. Prefix + suffix pair ("fast ball").
       const next = normalized[i + 1];
       if (next && entry.prefix?.some(p => looksLike(p, word)) && ballSuffixes.some(s => looksLike(s, next))) {
-        matches.push({ pitch, matchedWord: `${word} ${next}`, method: 'exact' });
+        matches.push({ pitch, matchedWord: `${word} ${next}`, method: 'exact', isCorrect: pitch == correctAnswer });
         normalized[i + 1] = ''; // consume the suffix so "ball" can't double-match
         i += 1;
         matchedThisWord = true;
@@ -166,7 +168,7 @@ export function matchPitches(transcript: string): PitchMatch[] {
       for (const [pitch, entry] of Object.entries(ballTypes)) {
         const closest = entry.full.find(f => looksLike(word, f));
         if (closest) {
-          matches.push({ pitch, matchedWord: word, method: 'fuzzy' });
+          matches.push({ pitch, matchedWord: word, method: 'fuzzy', isCorrect: pitch == correctAnswer });
           break;
         }
       }

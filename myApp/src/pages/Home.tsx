@@ -27,7 +27,28 @@ interface Guess {
   pitch: string;
   matchedWord: string;
   method: MatchMethod;
+  isCorrect: boolean;
 }
+
+export interface PitchToGuess {
+  pitchType: string;
+  timestamp: Date;
+}
+
+//TODO: read this from the JSON
+const allPitchTypes = [
+    "changeup",
+    "curveball",
+    "cutter",
+    "4-seamer",
+    "2-seamer",
+    "screwball",
+    "slider",
+    "slurve",
+    "splitter",
+    "sweeper",
+    "knuckleball"
+];
 
 const METHOD_LABELS: Record<MatchMethod, string> = {
   exact: 'exact match',
@@ -47,6 +68,24 @@ const Home: React.FC = () => {
   const { isSupported, isListening, interimTranscript, finalTranscript, error, start, stop, clear } =
     useSpeechRecognition('en-US');
 
+  //section: manage correct pitch type
+
+  var [correctPitch, setCorrectPitch] = useState<PitchToGuess>({
+    pitchType: "default",
+    timestamp: new Date()
+  });
+
+    
+
+  function getNewRandomPitch() {
+    setCorrectPitch({
+      pitchType: allPitchTypes[Math.floor(Math.random() * allPitchTypes.length)],
+      timestamp: new Date()
+    });
+    console.log(correctPitch);
+  }
+  //end section: manage correct pitch type
+
   const [guesses, setGuesses] = useState<Guess[]>([]);
   // How much of finalTranscript we've already scanned for pitch names, so we
   // never score the same words twice.
@@ -57,12 +96,17 @@ const Home: React.FC = () => {
     const newChunk = finalTranscript.slice(matchedUpToRef.current);
     matchedUpToRef.current = finalTranscript.length;
 
-    const found = matchPitches(newChunk);
+    const found = matchPitches(newChunk, correctPitch.pitchType);
     if (found.length > 0) {
+      console.log(found);
       setGuesses(prev => [
         ...found.map((match, i) => ({ ...match, id: Date.now() + i })),
         ...prev,
       ]);
+
+      if(found.some(f => f.isCorrect)){
+        getNewRandomPitch();
+      }
     }
   }, [finalTranscript]);
 
@@ -89,7 +133,11 @@ const Home: React.FC = () => {
 
       <IonContent className="ion-padding">
         
-        <PitchDisplay></PitchDisplay>
+        <PitchDisplay
+          correctPitch={correctPitch}
+        />
+
+        <IonButton onClick={() => getNewRandomPitch()}>New Pitch</IonButton>
 
         <IonCard>
           <IonCardHeader>
@@ -145,7 +193,8 @@ const Home: React.FC = () => {
             ) : (
               <div className="guess-list">
                 {guesses.map(guess => (
-                  <IonChip key={guess.id} color="secondary" outline>
+                  <IonChip key={guess.id} color={guess.isCorrect ? "success" : "danger"} outline>
+                    <IonIcon icon={guess.isCorrect ? "checkmark-outline" : "close-outline"} color={guess.isCorrect ? "success" : "danger"}></IonIcon>
                     <strong>{guess.pitch}</strong>
                     &nbsp;— heard “{guess.matchedWord}” ({METHOD_LABELS[guess.method]})
                   </IonChip>
