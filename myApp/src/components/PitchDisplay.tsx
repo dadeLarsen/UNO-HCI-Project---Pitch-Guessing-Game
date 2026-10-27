@@ -8,13 +8,20 @@ interface ContainerProps {
 
 const PitchDisplay: React.FC<ContainerProps> = ({correctPitch}) => {
 
-    
-    const [imageSrc, setImageSrc] = useState("https://dummyimage.com/250x330/000/fff");
+    const defaultUrl = "https://dummyimage.com/250x330/000/fff&text=mic+off"
+    const [imageSrc, setImageSrc] = useState(defaultUrl);
     const pitchToGuessTimestamp = useRef(correctPitch.timestamp);
 
     if(correctPitch.timestamp != pitchToGuessTimestamp.current){
         pitchToGuessTimestamp.current = correctPitch.timestamp;
-        setImageSrc(`/TestImages/BallTypes/${correctPitch.pitchType}.png`);
+        
+        //TODO: replace this with getting a video
+        if(correctPitch.pitchType != "default"){
+            setImageSrc(`/TestImages/BallTypes/${correctPitch.pitchType}.png`);
+        }
+        else{
+            setImageSrc(defaultUrl);
+        }
     }
 
 

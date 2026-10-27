@@ -75,16 +75,29 @@ const Home: React.FC = () => {
     timestamp: new Date()
   });
 
-    
-
   function getNewRandomPitch() {
     setCorrectPitch({
       pitchType: allPitchTypes[Math.floor(Math.random() * allPitchTypes.length)],
       timestamp: new Date()
     });
     console.log(correctPitch);
+
   }
   //end section: manage correct pitch type
+
+  function toggleMicrophone() {
+    if(isListening){
+      setCorrectPitch({
+        pitchType: "default",
+        timestamp: new Date()
+      });
+      stop();
+    }
+    else{
+      getNewRandomPitch();
+      start();
+    }
+  }
 
   const [guesses, setGuesses] = useState<Guess[]>([]);
   // How much of finalTranscript we've already scanned for pitch names, so we
@@ -137,7 +150,7 @@ const Home: React.FC = () => {
           correctPitch={correctPitch}
         />
 
-        <IonButton onClick={() => getNewRandomPitch()}>New Pitch</IonButton>
+        {/* <IonButton onClick={() => getNewRandomPitch()}>New Pitch</IonButton> */}
 
         <IonCard>
           <IonCardHeader>
@@ -150,7 +163,7 @@ const Home: React.FC = () => {
                 size="large"
                 shape="round"
                 color={isListening ? 'danger' : 'primary'}
-                onClick={isListening ? stop : start}
+                onClick={toggleMicrophone}
                 disabled={!isSupported}
               >
                 <IonIcon slot="start" icon={isListening ? micOffOutline : micOutline} />
