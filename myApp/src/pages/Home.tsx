@@ -15,7 +15,7 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/react';
-import { micOffOutline, micOutline, refreshOutline } from 'ionicons/icons';
+import { micOffOutline, micOutline, refreshOutline, checkmarkOutline, closeOutline } from 'ionicons/icons';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { matchPitches } from '../lib/pitchMatcher';
 import type { MatchMethod } from '../lib/pitchMatcher';
@@ -194,7 +194,7 @@ const Home: React.FC = () => {
               <div className="guess-list">
                 {guesses.map(guess => (
                   <IonChip key={guess.id} color={guess.isCorrect ? "success" : "danger"} outline>
-                    <IonIcon icon={guess.isCorrect ? "checkmark-outline" : "close-outline"} color={guess.isCorrect ? "success" : "danger"}></IonIcon>
+                    <IonIcon icon={guess.isCorrect ? checkmarkOutline : closeOutline} color={guess.isCorrect ? "success" : "danger"}></IonIcon>
                     <strong>{guess.pitch}</strong>
                     &nbsp;— heard “{guess.matchedWord}” ({METHOD_LABELS[guess.method]})
                   </IonChip>
