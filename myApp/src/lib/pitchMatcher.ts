@@ -39,9 +39,41 @@ function loadSuffixes(): string[] {
 const ballTypes: BallTypeMap = loadBallTypes();
 const ballSuffixes: string[] = loadSuffixes();
 
-/** Lowercase and strip everything that isn't a letter ("Fastball!" -> "fastball"). */
+/**
+ * Lowercase and strip everything that isn't a letter or digit
+ * ("Fastball!" -> "fastball", "4-Seamer" -> "4seamer").
+ *
+ * Digits are kept on purpose: "2-seamer" and "4-seamer" are different
+ * pitches, and dropping the digit would make both normalize to "seamer".
+ */
 export function normalizeWord(word: string): string {
-  return word.toLowerCase().replace(/[^a-z]/g, '');
+  return word.toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+/** Digits are part of the pitch name, so they must match exactly. */
+function sameNumbers(a: string, b: string): boolean {
+  const digits = (value: string) => (value.match(/\d/g) ?? []).join('');
+  return digits(a) === digits(b);
+}
+
+/**
+ * Tries to read `candidate` from consecutive transcript tokens starting at
+ * `start`, and returns how many tokens it used (or 0 for no match).
+ *
+ * Normalization removes spaces and hyphens, so this lets
+ * "4-seam-fastball", "4 seam fastball" and "4seamfastball" all match.
+ */
+function tokensForCandidate(normalized: string[], start: number, candidate: string): number {
+  if (!candidate) return 0;
+
+  let combined = '';
+  for (let i = start; i < normalized.length; i++) {
+    if (!normalized[i]) break;
+    combined += normalized[i];
+    if (combined === candidate) return i - start + 1;
+    if (!candidate.startsWith(combined)) return 0;
+  }
+  return 0;
 }
 
 /** Classic Levenshtein edit distance — used to forgive small mis-transcriptions. */
@@ -89,6 +121,10 @@ export interface PitchMatch {
   method: MatchMethod;
 
   isCorrect: boolean;
+  /** Character offset where the match starts in the transcript. */
+  startIndex: number;
+  /** Character offset just past the end of the match (exclusive). */
+  endIndex: number;
 }
 
 /**
@@ -102,19 +138,23 @@ export interface PitchMatch {
  * On top of that exact/sound-alike logic we allow a small edit distance so a
  * slightly mangled transcription ("fastboll") still scores.
  */
-export function matchPitches(transcript: string, correctAnswer: string): PitchMatch[] {
-  const words = transcript
-    .toLowerCase()
-    .split(/[^a-z0-9']+/)
-    .filter(Boolean);
-  const normalized = words.map(normalizeWord);
+export function matchPitches(transcript: string, correctAnswer = ''): PitchMatch[] {
+  const tokens = Array.from(transcript.toLowerCase().matchAll(/[a-z0-9']+/g), match => {
+    const raw = match[0];
+    const start = match.index ?? 0;
+    return {
+      raw,
+      normalized: normalizeWord(raw),
+      start,
+      end: start + raw.length,
+    };
+  });
+  const normalized = tokens.map(token => token.normalized);
   const matches: PitchMatch[] = [];
 
   for (let i = 0; i < normalized.length; i++) {
     const word = normalized[i];
     if (!word) continue;
-
-    const nextWord = normalized[i + 1];
 
     let matchedThisWord = false;
 
@@ -122,32 +162,35 @@ export function matchPitches(transcript: string, correctAnswer: string): PitchMa
       if (matchedThisWord) break;
 
       // 1a. The word IS the pitch name (index 0 of "full" is the exact spelling).
-      const exactFull = entry.full.find((f, idx) => {
-        if (idx !== 0) return false;
-        const normalizedFull = normalizeWord(f);
-        return normalizedFull === word || (nextWord && normalizedFull === `${word}${nextWord}`);
-      });
-      if (exactFull) {
-        const matchedWord = nextWord && normalizeWord(exactFull) === `${word}${nextWord}`
-          ? `${words[i]} ${words[i + 1]}`
-          : words[i];
-        matches.push({ pitch, matchedWord, method: 'exact', isCorrect: pitch == correctAnswer});
-        if (nextWord && normalizeWord(exactFull) === `${word}${nextWord}`) i += 1;
+      const consumedExact = tokensForCandidate(normalized, i, normalizeWord(entry.full[0]));
+      if (consumedExact) {
+        matches.push({
+          pitch,
+          matchedWord: tokens.slice(i, i + consumedExact).map(token => token.raw).join(' '),
+          method: 'exact',
+          isCorrect: pitch == correctAnswer,
+          startIndex: tokens[i].start,
+          endIndex: tokens[i + consumedExact - 1].end,
+        });
+        i += consumedExact - 1;
         matchedThisWord = true;
         break;
       }
 
       // 1b. The word SOUNDS LIKE the pitch name ("festival" -> fastball).
-      const soundAlike = entry.full.slice(1).find(f => {
-        const normalizedFull = normalizeWord(f);
-        return normalizedFull === word || (nextWord && normalizedFull === `${word}${nextWord}`);
-      });
+      const soundAlike = entry.full.slice(1)
+        .map(f => ({ f, consumed: tokensForCandidate(normalized, i, normalizeWord(f)) }))
+        .find(match => match.consumed > 0);
       if (soundAlike) {
-        const matchedWord = nextWord && normalizeWord(soundAlike) === `${word}${nextWord}`
-          ? `${words[i]} ${words[i + 1]}`
-          : words[i];
-        matches.push({ pitch, matchedWord, method: 'sound-alike', isCorrect: pitch == correctAnswer });
-        if (nextWord && normalizeWord(soundAlike) === `${word}${nextWord}`) i += 1;
+        matches.push({
+          pitch,
+          matchedWord: tokens.slice(i, i + soundAlike.consumed).map(token => token.raw).join(' '),
+          method: 'sound-alike',
+          isCorrect: pitch == correctAnswer,
+          startIndex: tokens[i].start,
+          endIndex: tokens[i + soundAlike.consumed - 1].end,
+        });
+        i += soundAlike.consumed - 1;
         matchedThisWord = true;
         break;
       }
@@ -155,7 +198,14 @@ export function matchPitches(transcript: string, correctAnswer: string): PitchMa
       // 2. Prefix + suffix pair ("fast ball").
       const next = normalized[i + 1];
       if (next && entry.prefix?.some(p => looksLike(p, word)) && ballSuffixes.some(s => looksLike(s, next))) {
-        matches.push({ pitch, matchedWord: `${word} ${next}`, method: 'exact', isCorrect: pitch == correctAnswer });
+        matches.push({
+          pitch,
+          matchedWord: `${tokens[i].raw} ${tokens[i + 1].raw}`,
+          method: 'exact',
+          isCorrect: pitch == correctAnswer,
+          startIndex: tokens[i].start,
+          endIndex: tokens[i + 1].end,
+        });
         normalized[i + 1] = ''; // consume the suffix so "ball" can't double-match
         i += 1;
         matchedThisWord = true;
@@ -166,9 +216,21 @@ export function matchPitches(transcript: string, correctAnswer: string): PitchMa
     // 3. Last-chance fuzzy match, e.g. "fastboll" -> fastball.
     if (!matchedThisWord && word.length >= 4) {
       for (const [pitch, entry] of Object.entries(ballTypes)) {
-        const closest = entry.full.find(f => looksLike(word, f));
+        const closest = entry.full.find(f => {
+          const candidate = normalizeWord(f);
+          // Don't let a missing/wrong digit turn "2-seamer" into "4-seamer"
+          // (or a bare "seamer" into one of them by accident).
+          return sameNumbers(word, candidate) && looksLike(word, candidate);
+        });
         if (closest) {
-          matches.push({ pitch, matchedWord: word, method: 'fuzzy', isCorrect: pitch == correctAnswer });
+          matches.push({
+            pitch,
+            matchedWord: tokens[i].raw,
+            method: 'fuzzy',
+            isCorrect: pitch == correctAnswer,
+            startIndex: tokens[i].start,
+            endIndex: tokens[i].end,
+          });
           break;
         }
       }

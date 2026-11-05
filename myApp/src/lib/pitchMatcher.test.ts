@@ -6,6 +6,11 @@ describe('normalizeWord', () => {
     expect(normalizeWord('Fastball!')).toBe('fastball');
     expect(normalizeWord('  Curve-Ball ')).toBe('curveball');
   });
+
+  it('keeps digits so seamers stay distinguishable', () => {
+    expect(normalizeWord('4-Seamer')).toBe('4seamer');
+    expect(normalizeWord('2-seamer')).toBe('2seamer');
+  });
 });
 
 describe('editDistance', () => {
@@ -78,5 +83,35 @@ describe('matchPitches', () => {
 
   it('ignores words that are not pitch names', () => {
     expect(matchPitches('the batter struck out')).toHaveLength(0);
+  });
+
+  it('distinguishes 2-seamers from 4-seamers', () => {
+    expect(matchPitches('two seamer').map(m => m.pitch)).toEqual(['2-seamer']);
+    expect(matchPitches('2 seamer').map(m => m.pitch)).toEqual(['2-seamer']);
+    expect(matchPitches('2-seamer').map(m => m.pitch)).toEqual(['2-seamer']);
+    expect(matchPitches('four seamer').map(m => m.pitch)).toEqual(['4-seamer']);
+    expect(matchPitches('4 seamer').map(m => m.pitch)).toEqual(['4-seamer']);
+    expect(matchPitches('4-seamer').map(m => m.pitch)).toEqual(['4-seamer']);
+  });
+
+  it('accepts 2-seam/4-seam fastball variants', () => {
+    expect(matchPitches('4-seam-fastball').map(m => m.pitch)).toEqual(['4-seamer']);
+    expect(matchPitches('four seam fastball').map(m => m.pitch)).toEqual(['4-seamer']);
+    expect(matchPitches('2-seam-fastball').map(m => m.pitch)).toEqual(['2-seamer']);
+    expect(matchPitches('two seam fastball').map(m => m.pitch)).toEqual(['2-seamer']);
+  });
+
+  it('reports where a match sits in the transcript', () => {
+    const [match] = matchPitches('I threw a 4-seam fastball');
+    expect(match.pitch).toBe('4-seamer');
+    expect(match.startIndex).toBe(10);
+    expect(match.endIndex).toBe(25);
+  });
+
+  it('treats a sinker as a 2-seamer', () => {
+    const matches = matchPitches('he threw a sinker', '2-seamer');
+    expect(matches).toHaveLength(1);
+    expect(matches[0].pitch).toBe('2-seamer');
+    expect(matches[0].isCorrect).toBe(true);
   });
 });

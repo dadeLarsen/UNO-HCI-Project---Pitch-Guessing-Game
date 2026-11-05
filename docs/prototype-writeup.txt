@@ -1,0 +1,36 @@
+PITCH GUESSER PROTOTYPE
+
+PROTOTYPE AND INTENDED USE
+
+Pitch Guesser is an Ionic React browser prototype for practicing baseball pitch recognition through a visual-and-voice game loop. When the user starts listening, the app selects a target pitch and displays its image. The user says a pitch name aloud; the Web Speech API provides live and final transcripts, and the matcher identifies the guess. Correct guesses receive a green check and advance to a new pitch. Incorrect guesses receive a red X while the user continues trying. Reset clears the transcript and results, and stopping the microphone returns the display to a microphone-off state.
+
+The matcher tolerates common speech-recognition errors, including exact names such as "fastball," sound-alikes such as "festival," split words such as "fast ball," and small transcription errors such as "fastboll." It recognizes changeup, curveball, cutter, four-seam and two-seam fastballs, screwball, slider, slurve, splitter, sweeper, and knuckleball. The prototype requires Chrome or another Chromium browser, microphone permission, an internet connection, and localhost or HTTPS.
+
+PROTOTYPE ARTIFACTS
+
+- Home screen and game loop: ../myApp/src/pages/Home.tsx
+- Pitch display and microphone-off state: ../myApp/src/components/PitchDisplay.tsx
+- Speech recognition: ../myApp/src/hooks/useSpeechRecognition.ts
+- Pitch matching and correctness classification: ../myApp/src/lib/pitchMatcher.ts
+- Matcher tests: ../myApp/src/lib/pitchMatcher.test.ts
+- Prepared pitch-video catalog: ../myApp/src/static/importantWords/balltypes/pitchVideos.json
+- Speech-to-text documentation: speech-to-text-tutorial.md
+- Pitch image assets: ../myApp/public/TestImages/BallTypes/
+
+The repository does not include the Milestone 1 sketches, so those should be attached separately if required.
+
+CHANGES FROM THE EARLIER CONCEPT
+
+The initial concept showed a pitch and asked the user to guess it. The newer prototype turns that idea into a repeating interaction: starting the microphone chooses a target, each guess is classified as correct or incorrect, and a correct answer generates the next target. The interface now gives clearer feedback with check and X icons, exposes both the raw transcript and matching method, and presents an intentional microphone-off state. Pitch videos have also been collected for the pitch types, although the current display still uses the image assets rather than playing those videos. The prototype does not yet track a score, streak, or practice history.
+
+DRAFT USAGE SCENARIOS
+
+A pitcher practicing alone starts a round, studies the displayed pitch, and says a guess. The green check or red X gives immediate feedback, and a correct answer automatically starts the next challenge without typing or navigation.
+
+A coach projects the app for a group demonstration. A player names the pitch aloud while the group sees the transcript, the interpreted pitch, and whether it matched. The coach can discuss cases such as "festival" being recognized as "fastball" or "fast ball" being joined into one pitch name.
+
+A user speaks naturally or encounters a microphone problem. The matcher accepts a phrase such as "that was a fast ball," while unsupported browsers or denied microphone access produce an explanation. This keeps the interaction understandable even when the speech service cannot be used.
+
+NEXT DESIGN STEPS
+
+The next iteration should integrate the prepared pitch videos into the display, add a score or streak, and save practice history. The starter end-to-end test should also be replaced with a test of the actual start-listen, guess, correctness-feedback, and next-pitch workflow. These changes would complete the practice-game loop while preserving the prototype's voice-tolerant matching.

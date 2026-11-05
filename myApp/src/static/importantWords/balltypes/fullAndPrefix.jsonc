@@ -1,15 +1,4 @@
 {
-    "fastball": {
-        "full": [
-            "fastball",
-            "festival"
-        ],
-        "prefix": [ 
-            "fast", 
-            "fest",
-            "first"
-        ]
-    },
     "curveball": {
         "full": [
             "curveball"
@@ -76,13 +65,35 @@
     "4-seamer": {
         "full": [
             "4-seamer",
-            "four seamer"
+            "four seamer",
+            "four seamers",
+            "4 seamers",
+            "4-seam-fastball",
+            "four-seam-fastball",
+            "force seam fastball",
+            "force seamer",
+            "four steam fastball",
+            "force steam fastball",
+            "4 steam fastball",
+            "forcing fastball"
         ]
     },
     "2-seamer": {
         "full": [
             "2-seamer",
-            "two seamer"
+            "two seamer",
+            "two seamers",
+            "2 seamers",
+            "2-seam-fastball",
+            "two-seam-fastball",
+            "two seam fastball",
+            "2 seam fastball",
+            "2 steam fastball",
+            "two steam fastball",
+            "two seem fastball",
+            "2 seem fastball",
+            "sinker",
+            "sinkers"
         ]
     },
     "sweeper": {

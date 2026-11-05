@@ -105,12 +105,20 @@ const Home: React.FC = () => {
   const matchedUpToRef = useRef(0);
 
   useEffect(() => {
-    if (finalTranscript.length <= matchedUpToRef.current) return;
-    const newChunk = finalTranscript.slice(matchedUpToRef.current);
-    matchedUpToRef.current = finalTranscript.length;
+    if (!finalTranscript) return;
 
-    const found = matchPitches(newChunk, correctPitch.pitchType);
+    // Rescan the whole transcript so a pitch split across recognizer chunks
+    // ("4-seam" then "fastball") isn't scored as a bare "fastball". We only
+    // keep matches that end after the part we've already handled.
+    const found = matchPitches(finalTranscript, correctPitch.pitchType)
+      .filter(match => match.endIndex > matchedUpToRef.current);
+
     if (found.length > 0) {
+      matchedUpToRef.current = Math.max(
+        matchedUpToRef.current,
+        ...found.map(match => match.endIndex),
+      );
+
       console.log(found);
       setGuesses(prev => [
         ...found.map((match, i) => ({ ...match, id: Date.now() + i })),
