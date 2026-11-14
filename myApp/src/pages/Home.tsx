@@ -1,11 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   IonButton,
-  IonCard,
-  IonCardContent,
-  IonCardHeader,
-  IonCardSubtitle,
-  IonCardTitle,
   IonChip,
   IonContent,
   IonHeader,
@@ -13,7 +8,6 @@ import {
   IonNote,
   IonPage,
   IonTitle,
-  IonToolbar,
 } from '@ionic/react';
 import { micOffOutline, micOutline, refreshOutline, checkmarkOutline, closeOutline } from 'ionicons/icons';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
@@ -142,9 +136,7 @@ const Home: React.FC = () => {
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar>
-          <IonTitle>Pitch Guesser</IonTitle>
-        </IonToolbar>
+        <IonTitle>Pitch Guesser</IonTitle>
       </IonHeader>
       {/* <IonHeader collapse="condense">
         <IonToolbar>
@@ -152,20 +144,35 @@ const Home: React.FC = () => {
         </IonToolbar>
       </IonHeader> */}
 
-      <IonContent className="ion-padding">
-        
-        <PitchDisplay
-          correctPitch={correctPitch}
-        />
+      <IonContent>
+        <main className="game-shell">
+          <section className="media-area">
+            <PitchDisplay correctPitch={correctPitch} />
 
-        {/* <IonButton onClick={() => getNewRandomPitch()}>New Pitch</IonButton> */}
+            {guesses.length > 0 && (
+              <div className="result-overlay" aria-live="polite">
+                {guesses[0].isCorrect ? (
+                  <strong className="result-correct">Correct!</strong>
+                ) : (
+                  <strong className="result-incorrect">Keep trying</strong>
+                )}
+                <span>Last guess: {guesses[0].pitch}</span>
+              </div>
+            )}
+          </section>
 
-        <IonCard>
-          <IonCardHeader>
-            <IonCardSubtitle>Voice input</IonCardSubtitle>
-            <IonCardTitle>Say a pitch name out loud</IonCardTitle>
-          </IonCardHeader>
-          <IonCardContent>
+          <section className="matcher-panel" aria-label="Pitch matcher">
+            <div className="matcher-heading">
+              <div>
+                <p className="eyebrow">Pitch matcher</p>
+                <h1>Say a pitch name out loud</h1>
+              </div>
+              <IonButton fill="clear" onClick={handleClear} aria-label="Reset matcher">
+                <IonIcon slot="start" icon={refreshOutline} />
+                Reset
+              </IonButton>
+            </div>
+
             <div className="mic-controls">
               <IonButton
                 size="large"
@@ -176,10 +183,6 @@ const Home: React.FC = () => {
               >
                 <IonIcon slot="start" icon={isListening ? micOffOutline : micOutline} />
                 {isListening ? 'Stop' : 'Start listening'}
-              </IonButton>
-              <IonButton fill="clear" onClick={handleClear}>
-                <IonIcon slot="start" icon={refreshOutline} />
-                Reset
               </IonButton>
             </div>
 
@@ -200,41 +203,19 @@ const Home: React.FC = () => {
                 The Web Speech API only works in Chromium browsers — open this app in Chrome.
               </p>
             )}
-          </IonCardContent>
-        </IonCard>
-
-        <IonCard>
-          <IonCardHeader>
-            <IonCardSubtitle>Results</IonCardSubtitle>
-            <IonCardTitle>Detected pitches</IonCardTitle>
-          </IonCardHeader>
-          <IonCardContent>
-            {guesses.length === 0 ? (
-              <IonNote>No pitches detected yet.</IonNote>
-            ) : (
-              <div className="guess-list">
+            {guesses.length > 0 && (
+              <div className="guess-list" aria-label="Detected pitches">
                 {guesses.map(guess => (
-                  <IonChip key={guess.id} color={guess.isCorrect ? "success" : "danger"} outline>
-                    <IonIcon icon={guess.isCorrect ? checkmarkOutline : closeOutline} color={guess.isCorrect ? "success" : "danger"}></IonIcon>
+                  <IonChip key={guess.id} color={guess.isCorrect ? 'success' : 'danger'} outline>
+                    <IonIcon icon={guess.isCorrect ? checkmarkOutline : closeOutline} />
                     <strong>{guess.pitch}</strong>
-                    &nbsp;— heard “{guess.matchedWord}” ({METHOD_LABELS[guess.method]})
+                    <span>heard “{guess.matchedWord}” ({METHOD_LABELS[guess.method]})</span>
                   </IonChip>
                 ))}
               </div>
             )}
-          </IonCardContent>
-        </IonCard>
-
-        {finalTranscript && (
-          <IonCard>
-            <IonCardHeader>
-              <IonCardSubtitle>Raw transcript</IonCardSubtitle>
-            </IonCardHeader>
-            <IonCardContent>
-              <p className="raw-transcript">{finalTranscript}</p>
-            </IonCardContent>
-          </IonCard>
-        )}
+          </section>
+        </main>
       </IonContent>
     </IonPage>
   );

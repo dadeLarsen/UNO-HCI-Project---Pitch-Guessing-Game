@@ -1,27 +1,125 @@
+ion-content {
+  --background: #f4f6f8;
+}
+
+ion-header {
+  display: none;
+}
+
+.game-shell {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: clamp(12px, 3vw, 32px);
+  gap: 14px;
+}
+
+.media-area {
+  position: relative;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+.pitch-display {
+  height: 100%;
+  min-height: 360px;
+  margin: 0;
+  overflow: hidden;
+  border: 2px solid #29313a;
+  border-radius: 34px;
+  background: #202a35;
+  box-shadow: none;
+}
+
+.pitch-display img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.result-overlay {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 24px;
+  border-radius: 14px;
+  color: #fff;
+  background: rgb(25 33 42 / 88%);
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.result-correct {
+  color: #76e39b;
+  font-size: 1.25rem;
+}
+
+.result-incorrect {
+  color: #ff9a9a;
+  font-size: 1.25rem;
+}
+
+.matcher-panel {
+  flex: 0 0 auto;
+  padding: 16px 20px;
+  border: 2px solid #29313a;
+  border-radius: 14px;
+  background: var(--ion-background-color, #fff);
+}
+
+.matcher-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.eyebrow {
+  margin: 0 0 2px;
+  color: var(--ion-color-medium);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.matcher-heading h1 {
+  margin: 0;
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
+}
+
 .mic-controls {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
+  margin-top: 10px;
 }
 
 .transcript {
-  margin-top: 16px;
-  font-size: 1.1rem;
   display: flex;
   align-items: center;
   gap: 8px;
+  min-height: 24px;
+  margin: 10px 0 0;
+  font-size: 1rem;
 }
 
-/* Small "recording" indicator dot */
 .live-dot {
   display: inline-block;
   width: 10px;
   height: 10px;
+  flex-shrink: 0;
   border-radius: 50%;
   background: var(--ion-color-danger, #eb445a);
   animation: pulse 1.2s ease-in-out infinite;
-  flex-shrink: 0;
 }
 
 .live-dot.idle {
@@ -36,23 +134,42 @@
 
 .interim-note {
   display: block;
+  margin-top: 4px;
   font-style: italic;
   opacity: 0.8;
 }
 
 .error-message {
+  margin: 8px 0 0;
   color: var(--ion-color-danger, #eb445a);
-  margin-top: 12px;
 }
 
 .guess-list {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
+  margin-top: 8px;
 }
 
-.raw-transcript {
-  font-family: monospace;
-  font-size: 0.9rem;
-  opacity: 0.85;
+.guess-list ion-chip {
+  margin: 0;
+}
+
+.guess-list ion-chip span {
+  margin-left: 4px;
+}
+
+@media (max-width: 600px) {
+  .game-shell {
+    padding: 10px;
+  }
+
+  .pitch-display {
+    min-height: 300px;
+    border-radius: 24px;
+  }
+
+  .matcher-panel {
+    padding: 14px;
+  }
 }
