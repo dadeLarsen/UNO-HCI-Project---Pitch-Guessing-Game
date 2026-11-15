@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   IonButton,
   IonChip,
@@ -15,6 +15,7 @@ import { matchPitches } from '../lib/pitchMatcher';
 import type { MatchMethod } from '../lib/pitchMatcher';
 import './Home.css';
 import PitchDisplay from '../components/PitchDisplay';
+import pitchVideos from '../static/importantWords/balltypes/pitchVideos.json';
 
 interface Guess {
   id: number;
@@ -25,24 +26,28 @@ interface Guess {
 }
 
 export interface PitchToGuess {
+  /** Bumped every round so the <video> remounts paused at 0s, even if the clip repeats. */
+  id: number;
   pitchType: string;
-  timestamp: Date;
+  videoUrl: string | null;
 }
 
-//TODO: read this from the JSON
-const allPitchTypes = [
-    "changeup",
-    "curveball",
-    "cutter",
-    "4-seamer",
-    "2-seamer",
-    "screwball",
-    "slider",
-    "slurve",
-    "splitter",
-    "sweeper",
-    "knuckleball"
-];
+interface RoundResult {
+  isCorrect: boolean;
+  pitch: string;
+}
+
+/** pitchVideos.json: pitch name -> { videos: string[] }. */
+type VideoCatalog = Record<string, { videos: string[] }>;
+
+const videoCatalog = pitchVideos as VideoCatalog;
+// The JSON is the single source of truth for which pitches exist (and their clips).
+const allPitchTypes = Object.keys(videoCatalog);
+
+/** How long to keep the result on screen after the reveal clip finishes. */
+const ADVANCE_DELAY_MS = 900;
+/** Fallback pause before advancing when the clip can't play (blocked autoplay, load error). */
+const REVEAL_FALLBACK_MS = 1500;
 
 const METHOD_LABELS: Record<MatchMethod, string> = {
   exact: 'exact match',
@@ -58,78 +63,134 @@ const ERROR_MESSAGES: Record<string, string> = {
   unsupported: 'This browser does not support the Web Speech API. Please use Chrome.',
 };
 
+const DEFAULT_PITCH: PitchToGuess = { id: 0, pitchType: 'default', videoUrl: null };
+
 const Home: React.FC = () => {
   const { isSupported, isListening, interimTranscript, finalTranscript, error, start, stop, clear } =
     useSpeechRecognition('en-US');
 
-  //section: manage correct pitch type
-
-  var [correctPitch, setCorrectPitch] = useState<PitchToGuess>({
-    pitchType: "default",
-    timestamp: new Date()
-  });
-
-  function getNewRandomPitch() {
-    setCorrectPitch({
-      pitchType: allPitchTypes[Math.floor(Math.random() * allPitchTypes.length)],
-      timestamp: new Date()
-    });
-    console.log(correctPitch);
-
-  }
-  //end section: manage correct pitch type
-
-  function toggleMicrophone() {
-    if(isListening){
-      setCorrectPitch({
-        pitchType: "default",
-        timestamp: new Date()
-      });
-      stop();
-    }
-    else{
-      getNewRandomPitch();
-      start();
-    }
-  }
-
+  const [correctPitch, setCorrectPitch] = useState<PitchToGuess>(DEFAULT_PITCH);
   const [guesses, setGuesses] = useState<Guess[]>([]);
+  const [roundResult, setRoundResult] = useState<RoundResult | null>(null);
+  const [isRevealing, setIsRevealing] = useState(false);
+
   // How much of finalTranscript we've already scanned for pitch names, so we
   // never score the same words twice.
   const matchedUpToRef = useRef(0);
+  // Once a round has been guessed we stop scoring until the next pitch loads.
+  const roundLockedRef = useRef(false);
+  const roundIdRef = useRef(0);
+  const advanceTimerRef = useRef<number | null>(null);
+  // Lets the scoring effect read the current pitch without re-running on pitch change.
+  const correctPitchRef = useRef(correctPitch);
 
   useEffect(() => {
+    correctPitchRef.current = correctPitch;
+  }, [correctPitch]);
+
+  const cancelAdvance = useCallback(() => {
+    if (advanceTimerRef.current !== null) {
+      window.clearTimeout(advanceTimerRef.current);
+      advanceTimerRef.current = null;
+    }
+  }, []);
+
+  // Pick a fresh pitch + clip and hold it paused until the player guesses.
+  const startRound = useCallback(() => {
+    cancelAdvance();
+    const pitchType = allPitchTypes[Math.floor(Math.random() * allPitchTypes.length)];
+    const videos = videoCatalog[pitchType]?.videos ?? [];
+    const videoUrl = videos.length > 0 ? videos[Math.floor(Math.random() * videos.length)] : null;
+
+    roundIdRef.current += 1;
+    roundLockedRef.current = false;
+    setRoundResult(null);
+    setIsRevealing(false);
+    setCorrectPitch({ id: roundIdRef.current, pitchType, videoUrl });
+  }, [cancelAdvance]);
+
+  // Reveal the clip, then move on to the next pitch once it's shown the result.
+  const scheduleAdvance = useCallback(
+    (delay: number) => {
+      if (advanceTimerRef.current !== null) return;
+      advanceTimerRef.current = window.setTimeout(() => {
+        advanceTimerRef.current = null;
+        startRound();
+      }, delay);
+    },
+    [startRound],
+  );
+
+  const handleVideoEnded = useCallback(() => scheduleAdvance(ADVANCE_DELAY_MS), [scheduleAdvance]);
+
+  // Only skip ahead if we were mid-reveal — a load error while the player is
+  // still guessing shouldn't silently end the round.
+  const handleVideoError = useCallback(() => {
+    if (roundLockedRef.current) scheduleAdvance(REVEAL_FALLBACK_MS);
+  }, [scheduleAdvance]);
+
+  // Score new speech. One guess per pitch: the first pitch name heard locks the
+  // round, plays the reveal clip and shows the result.
+  useEffect(() => {
     if (!finalTranscript) return;
+    if (roundLockedRef.current) return;
 
     // Rescan the whole transcript so a pitch split across recognizer chunks
     // ("4-seam" then "fastball") isn't scored as a bare "fastball". We only
     // keep matches that end after the part we've already handled.
-    const found = matchPitches(finalTranscript, correctPitch.pitchType)
+    const found = matchPitches(finalTranscript, correctPitchRef.current.pitchType)
       .filter(match => match.endIndex > matchedUpToRef.current);
 
-    if (found.length > 0) {
-      matchedUpToRef.current = Math.max(
-        matchedUpToRef.current,
-        ...found.map(match => match.endIndex),
-      );
+    if (found.length === 0) return;
 
-      console.log(found);
-      setGuesses(prev => [
-        ...found.map((match, i) => ({ ...match, id: Date.now() + i })),
-        ...prev,
-      ]);
+    matchedUpToRef.current = Math.max(
+      matchedUpToRef.current,
+      ...found.map(match => match.endIndex),
+    );
 
-      if(found.some(f => f.isCorrect)){
-        getNewRandomPitch();
-      }
-    }
+    setGuesses(prev => [
+      ...found.map((match, i) => ({ ...match, id: Date.now() + i })),
+      ...prev,
+    ]);
+
+    const correctGuess = found.find(match => match.isCorrect);
+    setRoundResult({
+      isCorrect: Boolean(correctGuess),
+      pitch: (correctGuess ?? found[0]).pitch,
+    });
+    roundLockedRef.current = true;
+    setIsRevealing(true);
   }, [finalTranscript]);
+
+  // Put the current pitch back to "waiting for a guess" without changing it.
+  const resetRound = useCallback(() => {
+    roundLockedRef.current = false;
+    setRoundResult(null);
+    setIsRevealing(false);
+    cancelAdvance();
+  }, [cancelAdvance]);
+
+  function toggleMicrophone() {
+    if (isListening) {
+      stop();
+      resetRound();
+      setCorrectPitch(DEFAULT_PITCH);
+    } else {
+      startRound();
+      start();
+    }
+  }
 
   const handleClear = () => {
     clear();
     matchedUpToRef.current = 0;
     setGuesses([]);
+    resetRound();
+    if (isListening) startRound();
   };
+
+  // Never leave the advance timer running if we unmount mid-reveal.
+  useEffect(() => cancelAdvance, [cancelAdvance]);
 
   const errorMessage = error ? (ERROR_MESSAGES[error] ?? `Speech error: ${error}`) : null;
 
@@ -147,16 +208,21 @@ const Home: React.FC = () => {
       <IonContent>
         <main className="game-shell">
           <section className="media-area">
-            <PitchDisplay correctPitch={correctPitch} />
+            <PitchDisplay
+              correctPitch={correctPitch}
+              isRevealing={isRevealing}
+              onVideoEnded={handleVideoEnded}
+              onVideoError={handleVideoError}
+            />
 
-            {guesses.length > 0 && (
+            {roundResult && (
               <div className="result-overlay" aria-live="polite">
-                {guesses[0].isCorrect ? (
+                {roundResult.isCorrect ? (
                   <strong className="result-correct">Correct!</strong>
                 ) : (
-                  <strong className="result-incorrect">Keep trying</strong>
+                  <strong className="result-incorrect">Incorrect</strong>
                 )}
-                <span>Last guess: {guesses[0].pitch}</span>
+                <span>Guessed: {roundResult.pitch}</span>
               </div>
             )}
           </section>
